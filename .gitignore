@@ -1,6 +1,8 @@
 # Build and test artifacts
 
 towervm
+towervm_asm
+
 *_test
 cmake-build-debug/
 
