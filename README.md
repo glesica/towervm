@@ -18,3 +18,9 @@ After building, tests may be run with:
 ```
 make test
 ```
+
+Examples may be run from the `build/` directory:
+
+```
+./build/fibonacci_example
+```

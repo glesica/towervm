@@ -1,44 +1,58 @@
 cmake_minimum_required(VERSION 3.17)
-project(towervm)
+project(
+        towervm
+        VERSION 0.1.0
+        LANGUAGES CXX
+)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY build)
 
 # -------------------------------------
 # Programs
 # -------------------------------------
 
 # The VM itself
-add_executable(towervm towervm.cpp machine.cpp machine.h opcodes.h errors.h registers.h memory.h)
+add_executable(towervm towervm.cpp machine.cpp machine.h errors.cpp errors.h opcodes.h memory.h)
 
 # Assembler
 add_executable(towervm_asm towervm_asm.cpp parser.cpp parser.h)
 
 # -------------------------------------
+# Examples
+# -------------------------------------
+
+add_executable(fibonacci_example examples/fibonacci.cpp machine.cpp machine.h errors.cpp errors.h opcodes.h)
+
+# -------------------------------------
 # Unit tests
 # -------------------------------------
 
-enable_testing()
+include(CTest)
 list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 
-add_executable(execute_test tests/execute.cpp machine.cpp machine.h opcodes.h errors.h registers.h tests/asserts.h)
-add_test(NAME execute_test COMMAND execute_test)
+if(BUILD_TESTING)
+    add_executable(execute_test tests/execute.cpp machine.cpp machine.h opcodes.h)
+    add_test(NAME execute_test COMMAND execute_test)
 
-add_executable(load_program_test tests/load_program.cpp machine.cpp machine.h)
-add_test(NAME load_program_test COMMAND load_program_test)
+    add_executable(load_program_test tests/load_program.cpp machine.cpp machine.h)
+    add_test(NAME load_program_test COMMAND load_program_test)
 
-add_executable(machine_test tests/machine.cpp machine.cpp machine.h)
-add_test(NAME machine_test COMMAND machine_test)
+    add_executable(machine_test tests/machine.cpp machine.cpp machine.h)
+    add_test(NAME machine_test COMMAND machine_test)
+endif()
 
 # -------------------------------------
 # Custom Targets
 # -------------------------------------
 
-file(GLOB SOURCES "./**.c" "./**.cpp" "./**.h" "./**.hpp")
+file(GLOB MAIN_SOURCES "./*.c" "./*.cpp" "./*.h" "./*.hpp")
+file(GLOB TEST_SOURCES "tests/**.c" "tests/**.cpp" "tests/**.h" "tests/**.hpp")
 
 # Runs clang-format on the code
 add_custom_target(
         format
-        COMMAND clang-format -i ${SOURCES}
+        COMMAND clang-format -i ${MAIN_SOURCES} ${TEST_SOURCES}
         VERBATIM
 )
 
@@ -46,6 +60,6 @@ add_custom_target(
 # exit code if so
 add_custom_target(
         check-format
-        COMMAND clang-format --dry-run --Werror ${SOURCES}
+        COMMAND clang-format --dry-run --Werror ${MAIN_SOURCES} ${TEST_SOURCES}
         VERBATIM
 )
