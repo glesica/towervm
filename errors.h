@@ -4,11 +4,14 @@
 #include <cstdint>
 
 typedef enum {
-  NoError,
-  InvalidAddressError,
+  InvalidAddressError = 0,
   InvalidRegisterError,
   InvalidOpError,
+  MachineStoppedError,
+  NoError,
 } error_kind;
+
+extern const char *error_names[5];
 
 typedef struct {
   error_kind kind;

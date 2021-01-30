@@ -9,21 +9,21 @@
 
 #include "errors.h"
 #include "memory.h"
-#include "registers.h"
+
+#define TARGET_MACHINE_SIZE 2048
+#define TARGET_REG_COUNT 8
+#define TARGET_MEM_COUNT (TARGET_MACHINE_SIZE - TARGET_REG_COUNT - 1)
 
 typedef struct {
   // General purpose registers.
-  mem_value reg[2];
-
-  // Accumulator register.
-  mem_value acc;
+  mem_value reg[TARGET_REG_COUNT];
 
   // Program counter holds the address in memory of the
   // next instruction to be executed.
   uint32_t pc;
 
   // Main memory where the program and data are stored.
-  mem_value mem[448];
+  mem_value mem[TARGET_MEM_COUNT];
 } machine;
 
 /**
@@ -39,19 +39,29 @@ typedef struct {
 #define REG_COUNT(M) (sizeof((M)->reg) / sizeof((M)->reg[0]))
 
 /**
- * Expands to the next value stored in memory after the current
- * position pointed to by the program counter. Also increments
- * the PC by one so that subsequent invocations continue reading
- * through memory.
+ * Read and store a value from memory based on the current location
+ * of the program counter, then increment the counter to be ready
+ * for the next read. This pattern allows us to implement jumps by
+ * simply modifying the program counter itself.
  */
-#define OP_ARG(M) M->mem[++(M->pc)]
+#define READ_PC(M, A)                                                          \
+  mem_value A = M->mem[M->pc];                                                 \
+  M->pc += 1;
 
 /**
  * Move the program forward by executing one instruction and
- * leaving the machine in a consistent state for the next.
+ * leaving the machine in a consistent state, ready for the next. If
+ * an error occurred during execution, it is reflected in the returned
+ * struct.
  */
 machine_error execute(machine *m);
 
+/**
+ * Reset the machine state to be ready to run a new program and then
+ * read the program, as an array of opcodes and data, into the machine.
+ * After this function returns the machine is ready to have `execute`
+ * called on it.
+ */
 void load_program(machine *m, const mem_value values[], uint64_t value_count);
 
 #endif // TOWERVM_MACHINE_H

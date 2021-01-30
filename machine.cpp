@@ -18,15 +18,41 @@
   }
 
 machine_error execute_arith(machine *m, opcode op) {
-  mem_value arg_reg = OP_ARG(m);
+  READ_PC(m, arg_reg0)
+  VALIDATE_REG(m, arg_reg0)
+
+  READ_PC(m, arg_reg1)
+  VALIDATE_REG(m, arg_reg1)
+
+  switch (op) {
+  case ADD_RR:
+    m->reg[arg_reg1] += m->reg[arg_reg0];
+    break;
+  case SUB_RR:
+    m->reg[arg_reg1] -= m->reg[arg_reg0];
+    break;
+  default:
+    // Should be unreachable because it should never
+    // be called with an incompatible op and doing so
+    // represents a bug in the VM.
+    assert(false);
+  }
+
+  return no_error;
+}
+
+machine_error execute_arith_literal(machine *m, opcode op) {
+  READ_PC(m, arg_value)
+
+  READ_PC(m, arg_reg)
   VALIDATE_REG(m, arg_reg)
 
   switch (op) {
-  case ADD:
-    m->acc += m->reg[arg_reg];
+  case ADD_LR:
+    m->reg[arg_reg] += arg_value;
     break;
-  case SUB:
-    m->acc -= m->reg[arg_reg];
+  case SUB_LR:
+    m->reg[arg_reg] -= arg_value;
     break;
   default:
     // Should be unreachable because it should never
@@ -39,21 +65,32 @@ machine_error execute_arith(machine *m, opcode op) {
 }
 
 machine_error execute_dat(machine *m) {
-  mem_value arg_addr = OP_ARG(m);
+  READ_PC(m, arg_addr)
   VALIDATE_ADDR(m, arg_addr)
 
-  mem_value arg_data = OP_ARG(m);
+  READ_PC(m, arg_data)
 
   m->mem[arg_addr] = arg_data;
 
   return no_error;
 }
 
+machine_error execute_clr(machine *m) {
+  READ_PC(m, reg)
+  VALIDATE_REG(m, reg)
+
+  READ_PC(m, arg_data)
+
+  m->reg[reg] = arg_data;
+
+  return no_error;
+}
+
 machine_error execute_sto(machine *m) {
-  mem_value arg_reg = OP_ARG(m);
+  READ_PC(m, arg_reg)
   VALIDATE_REG(m, arg_reg)
 
-  mem_value arg_addr = OP_ARG(m);
+  READ_PC(m, arg_addr)
   VALIDATE_ADDR(m, arg_addr)
 
   m->mem[arg_addr] = m->reg[arg_reg];
@@ -62,10 +99,10 @@ machine_error execute_sto(machine *m) {
 }
 
 machine_error execute_lod(machine *m) {
-  mem_value arg_addr = OP_ARG(m);
+  READ_PC(m, arg_addr)
   VALIDATE_ADDR(m, arg_addr)
 
-  mem_value arg_reg = OP_ARG(m);
+  READ_PC(m, arg_reg)
   VALIDATE_REG(m, arg_reg)
 
   m->reg[arg_reg] = m->mem[arg_addr];
@@ -73,16 +110,43 @@ machine_error execute_lod(machine *m) {
   return no_error;
 }
 
+machine_error execute_jne(machine *m) {
+  READ_PC(m, arg_addr)
+  VALIDATE_ADDR(m, arg_addr)
+
+  READ_PC(m, arg_reg0)
+  VALIDATE_REG(m, arg_reg0)
+  mem_value value_reg0 = m->reg[arg_reg0];
+
+  READ_PC(m, arg_reg1)
+  VALIDATE_REG(m, arg_reg1)
+  mem_value value_reg1 = m->reg[arg_reg1];
+
+  if (value_reg0 != value_reg1) {
+    m->pc = arg_addr;
+  }
+
+  return no_error;
+}
+
 machine_error execute(machine *m) {
-  mem_value op = m->mem[m->pc];
+  READ_PC(m, op)
   machine_error err;
+
   switch (op) {
-  case ADD:
-  case SUB:
+  case ADD_RR:
+  case SUB_RR:
     err = execute_arith(m, op);
+    break;
+  case ADD_LR:
+  case SUB_LR:
+    err = execute_arith_literal(m, op);
     break;
   case DAT:
     err = execute_dat(m);
+    break;
+  case CLR:
+    err = execute_clr(m);
     break;
   case STO:
     err = execute_sto(m);
@@ -90,13 +154,20 @@ machine_error execute(machine *m) {
   case LOD:
     err = execute_lod(m);
     break;
+  case JNE:
+    err = execute_jne(m);
+    break;
+  case STP:
+    err = {
+        .kind = MachineStoppedError,
+    };
+    break;
   default:
-    return {
+    err = {
         .kind = InvalidOpError,
     };
   }
 
-  m->pc += 1;
   return err;
 }
 
@@ -105,7 +176,6 @@ void load_program(machine *m, const mem_value values[], uint64_t value_count) {
 
   // Zero out all the things
 
-  m->acc = 0;
   m->pc = 0;
   for (int &i : m->reg) {
     i = 0;
