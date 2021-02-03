@@ -1,4 +1,4 @@
-#include "../machine.h"
+#include "../src/machine.h"
 
 #include "asserts.h"
 

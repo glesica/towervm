@@ -11,11 +11,21 @@
   }
 
 #define VALIDATE_ADDR(M, A)                                                    \
-  if (A < 0 || A >= MEM_SIZE(M)) {                                             \
+  if (A < 0 || A >= MEM_COUNT(M)) {                                            \
     return {                                                                   \
         .kind = InvalidAddressError,                                           \
     };                                                                         \
   }
+
+// TODO: Ideally we'd want to share memory between the machine and device
+// We still need a way for a device to communicate back to the machine
+// We could just maintain a separate ordered list of devices and then run
+// through the list after each instruction is executed and allow them to
+// do their thing. We don't actually need any links between them. How does
+// the machine know that its memory was updated, though? Maybe it just has
+// to figure that out for itself. But then we need to go the other
+// direction. Should part of the memory be read and part write?
+void attach_device(machine *m, device *d) {}
 
 machine_error execute_arith(machine *m, opcode op) {
   READ_PC(m, arg_reg0)
@@ -38,7 +48,7 @@ machine_error execute_arith(machine *m, opcode op) {
     assert(false);
   }
 
-  return no_error;
+  return no_machine_error;
 }
 
 machine_error execute_arith_literal(machine *m, opcode op) {
@@ -61,7 +71,7 @@ machine_error execute_arith_literal(machine *m, opcode op) {
     assert(false);
   }
 
-  return no_error;
+  return no_machine_error;
 }
 
 machine_error execute_dat(machine *m) {
@@ -72,7 +82,7 @@ machine_error execute_dat(machine *m) {
 
   m->mem[arg_addr] = arg_data;
 
-  return no_error;
+  return no_machine_error;
 }
 
 machine_error execute_clr(machine *m) {
@@ -83,7 +93,7 @@ machine_error execute_clr(machine *m) {
 
   m->reg[reg] = arg_data;
 
-  return no_error;
+  return no_machine_error;
 }
 
 machine_error execute_sto(machine *m) {
@@ -95,7 +105,7 @@ machine_error execute_sto(machine *m) {
 
   m->mem[arg_addr] = m->reg[arg_reg];
 
-  return no_error;
+  return no_machine_error;
 }
 
 machine_error execute_lod(machine *m) {
@@ -107,7 +117,7 @@ machine_error execute_lod(machine *m) {
 
   m->reg[arg_reg] = m->mem[arg_addr];
 
-  return no_error;
+  return no_machine_error;
 }
 
 machine_error execute_jne(machine *m) {
@@ -126,7 +136,7 @@ machine_error execute_jne(machine *m) {
     m->pc = arg_addr;
   }
 
-  return no_error;
+  return no_machine_error;
 }
 
 machine_error execute(machine *m) {
@@ -172,7 +182,7 @@ machine_error execute(machine *m) {
 }
 
 void load_program(machine *m, const mem_value values[], uint64_t value_count) {
-  assert(value_count <= MEM_SIZE(m));
+  assert(value_count <= MEM_COUNT(m));
 
   // Zero out all the things
 

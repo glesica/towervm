@@ -7,30 +7,50 @@
 #include <cstdint>
 #include <cstdlib>
 
+#include "device.h"
 #include "errors.h"
 #include "memory.h"
 
 #define TARGET_MACHINE_SIZE 2048
 #define TARGET_REG_COUNT 8
-#define TARGET_MEM_COUNT (TARGET_MACHINE_SIZE - TARGET_REG_COUNT - 1)
+#define TARGET_DEV_COUNT 4
+#define TARGET_MEM_COUNT                                                       \
+  (TARGET_MACHINE_SIZE - (TARGET_REG_COUNT * DEVICE_BUS_WIDTH) - 1)
 
 typedef struct {
-  // General purpose registers.
-  mem_value reg[TARGET_REG_COUNT];
-
-  // Program counter holds the address in memory of the
-  // next instruction to be executed.
+  /**
+   * Program counter holds the address in memory of the
+   * next instruction to be executed.
+   */
   uint32_t pc;
 
-  // Main memory where the program and data are stored.
+  /**
+   * General purpose registers.
+   */
+  mem_value reg[TARGET_REG_COUNT];
+
+  /**
+   * Device bus memory. Reading and writing from these locations
+   * allows the machine to interact with other devices based on
+   * their particular protocols.
+   *
+   * Devices must be associated with the machine and assigned a
+   * slot. The number of slots is determined by `TARGET_DEV_COUNT`.
+   * Each slot has 8 words associated with it.
+   */
+  mem_value dev[TARGET_DEV_COUNT * DEVICE_BUS_WIDTH];
+
+  /**
+   * Main memory where the program and data are stored.
+   */
   mem_value mem[TARGET_MEM_COUNT];
 } machine;
 
 /**
- * Expands to the size of the machine's physical memory in
- * addressable words.
+ * Expands to the number of memory locations in the device's
+ * physical memory in addressable words.
  */
-#define MEM_SIZE(M) (sizeof((M)->mem) / sizeof((M)->mem[0]))
+#define MEM_COUNT(M) (sizeof((M)->mem) / sizeof((M)->mem[0]))
 
 /**
  * Expands to the number of general purpose registers available on
@@ -47,6 +67,11 @@ typedef struct {
 #define READ_PC(M, A)                                                          \
   mem_value A = M->mem[M->pc];                                                 \
   M->pc += 1;
+
+/**
+ * Attach a device to the machine such that programs have access to it.
+ */
+void attach_device(machine *m, device *d);
 
 /**
  * Move the program forward by executing one instruction and

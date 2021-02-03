@@ -1,5 +1,5 @@
-#include "../machine.h"
-#include "../opcodes.h"
+#include "../src/machine.h"
+#include "../src/opcodes.h"
 
 #include "asserts.h"
 
