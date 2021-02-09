@@ -42,12 +42,12 @@ list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 
 if (BUILD_TESTING)
     add_executable(
-            execute_test
-            tests/execute.cpp
+            advance_test
+            tests/advance.cpp
             src/machine.cpp
             src/machine.h
             tests/asserts.h)
-    add_test(NAME execute_test COMMAND execute_test)
+    add_test(NAME advance_test COMMAND advance_test)
 
     add_executable(
             load_program_test
