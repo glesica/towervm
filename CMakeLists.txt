@@ -89,12 +89,12 @@ file(GLOB EXAMPLE_SOURCES
 # Runs clang-format on the code
 add_custom_target(
         format
-        COMMAND clang-format -i ${MAIN_SOURCES} ${TEST_SOURCES} ${EXAMPLE_SOURCES}
+        COMMAND clang-format -i ${MAIN_SOURCES} ${TEST_SOURCES}
         VERBATIM)
 
 # Checks whether clang-format needs to be run and sets a non-zero
 # exit code if so
 add_custom_target(
         check-format
-        COMMAND clang-format --dry-run --Werror ${MAIN_SOURCES} ${TEST_SOURCES} ${EXAMPLE_SOURCES}
+        COMMAND clang-format --dry-run --Werror ${MAIN_SOURCES} ${TEST_SOURCES}
         VERBATIM)

@@ -1,6 +1,8 @@
 #include "machine.h"
 #include "instructions.h"
 
+MachErr execute_sta(Mach *m) { return success_mach_err; }
+
 MachErr execute_add(Mach *m) {
   POP(m, a0)
   POP(m, a1)
@@ -62,7 +64,7 @@ MachErr execute_jnz(Mach *m) {
   POP(m, a)
   POP(m, v)
 
-  if (v == 0) {
+  if (v != 0) {
     WRITE_INST(m, a)
   }
 
@@ -120,8 +122,8 @@ MachErr execute_wri(Mach *m) {
 }
 
 MachErr execute_psh(Mach *m) {
-  READ_INST(m, value)
-  PUSH(m, value)
+  READ_INST(m, v)
+  PUSH(m, v)
   return success_mach_err;
 }
 
@@ -130,6 +132,9 @@ MachErr advance(Mach *m) {
 
   MachErr err;
   switch (inst) {
+  case STA:
+    err = execute_sta(m);
+    break;
   case END:
     err = stopped_mach_err;
     break;
@@ -176,12 +181,14 @@ MachErr advance(Mach *m) {
   return err;
 }
 
-// TODO: Error if the program is too large
+// TODO: Error if the prog is too large
+// TODO: Error if no STA found
 void load_program(Mach *m, const Word prog[], size_t prog_len) {
-  m->ip = MEM_SIZE - prog_len;
-  for (size_t i_prog = 0; i_prog < prog_len; i_prog++) {
-    auto i_mem = MEM_SIZE - prog_len + i_prog;
-    m->mem[i_mem] = prog[i_prog];
+  for (size_t i = 0; i < prog_len; i++) {
+    if (prog[i] == STA) {
+      m->ip = i;
+    }
+    m->mem[i] = prog[i];
   }
 }
 
@@ -192,4 +199,56 @@ MachErr run(Mach *m) {
   } while (err.kind == SuccessMachErr);
 
   return err;
+}
+
+void print_mach(Mach *m, size_t stack_count, size_t mem_count) {
+  if (stack_count > 0) {
+    printf("stack:\n");
+    for (size_t i = 0; i < stack_count; i++) {
+      if (i == m->sp) {
+        printf("->");
+      } else {
+        printf("  ");
+      }
+      printf("  [%zu] = %d\n", i, m->stack[i]);
+    }
+  }
+
+  if (mem_count > 0) {
+    printf("memory:\n");
+    for (size_t i = 0; i < mem_count; i++) {
+      if (i == m->ip) {
+        printf("->");
+      } else {
+        printf("  ");
+      }
+      printf("  [%zu] = %d\n", i, m->mem[i]);
+    }
+  }
+}
+
+void print_mach_err(MachErr e) {
+  printf("MachErr: ");
+  switch (e.kind) {
+  case InvalidAddrMachErr:
+    printf("InvalidAddrMachErr");
+    break;
+  case InvalidOpMachErr:
+    printf("InvalidOpMachErr");
+    break;
+  case InvalidStackAddrMachErr:
+    printf("InvalidStackAddrMachErr");
+    break;
+  case NotImplementedMachErr:
+    printf("NotImplementedMachErr");
+    break;
+  case StoppedMachErr:
+    printf("StoppedMachErr");
+    break;
+  case SuccessMachErr:
+    printf("SuccessMachErr");
+    break;
+  }
+
+  printf("\n");
 }

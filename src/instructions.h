@@ -5,7 +5,8 @@
 
 #include "memory.h"
 
-const Word END = 0;
+const Word STA = 0;
+const Word END = 10;
 
 // Arithmetic
 const Word ADD = 1000;
