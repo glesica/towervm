@@ -15,7 +15,9 @@
 // ------------------------------------
 
 typedef enum {
+  InvalidAddrMachErr,
   InvalidOpMachErr,
+  InvalidStackAddrMachErr,
   NotImplementedMachErr,
   StoppedMachErr,
   SuccessMachErr,
@@ -38,24 +40,38 @@ const MachErr success_mach_err = {.kind = SuccessMachErr};
 // ------------------------------------
 
 #define MEM_SIZE 1024
+#define STACK_SIZE 1024
 
 typedef struct {
   Addr ip;
   Addr sp;
   Word mem[MEM_SIZE];
+  Word stack[STACK_SIZE];
 } Mach;
 
 #define INIT_MACH(M)                                                           \
-  (M)->ip = MEM_SIZE;                                                          \
+  (M)->ip = 0;                                                                 \
   (M)->sp = 0;
 
 // ------------------------------------
 // Stack operations
 // ------------------------------------
 
-#define PUSH(M, V) (M)->mem[((M)->sp)++] = V;
+#define PUSH(M, V)                                                             \
+  if (((M)->sp) >= STACK_SIZE || ((M)->sp) < 0) {                              \
+    return {                                                                   \
+        .kind = InvalidStackAddrMachErr,                                       \
+    };                                                                         \
+  }                                                                            \
+  (M)->stack[((M)->sp)++] = V;
 
-#define POP(M, V) Word V = (M)->mem[--((M)->sp)];
+#define POP(M, V)                                                              \
+  if (((M)->sp) > STACK_SIZE || ((M)->sp) <= 0) {                              \
+    return {                                                                   \
+        .kind = InvalidStackAddrMachErr,                                       \
+    };                                                                         \
+  }                                                                            \
+  Word V = (M)->stack[--((M)->sp)];
 
 // ------------------------------------
 // Programming
@@ -66,26 +82,50 @@ typedef struct {
  *
  * TODO: Validate the pointer position first?
  */
-#define READ_INST(M, V) Word V = (M)->mem[((M)->ip)++];
+#define READ_INST(M, V)                                                        \
+  if (((M)->ip) >= MEM_SIZE || ((M)->ip) < 0) {                                \
+    return {                                                                   \
+        .kind = InvalidAddrMachErr,                                            \
+    };                                                                         \
+  }                                                                            \
+  Word V = (M)->mem[((M)->ip)++];
 
 /**
  * Move the instruction pointer to the given location.
  */
-#define WRITE_INST(M, V) (M)->ip = V;
+#define WRITE_INST(M, A)                                                       \
+  if ((A) >= MEM_SIZE || (A) < 0) {                                            \
+    return {                                                                   \
+        .kind = InvalidAddrMachErr,                                            \
+    };                                                                         \
+  }                                                                            \
+  (M)->ip = A;
 
 /**
  * Read data from memory.
  *
  * TODO: Validate the memory address and return error
  */
-#define READ_DATA(M, A, V) Word V = (M)->mem[(A)];
+#define READ_DATA(M, A, V)                                                     \
+  if ((A) >= MEM_SIZE || (A) < 0) {                                            \
+    return {                                                                   \
+        .kind = InvalidAddrMachErr,                                            \
+    };                                                                         \
+  }                                                                            \
+  Word V = (M)->mem[(A)];
 
 /**
  * Write data to memory.
  *
  * TODO: Validate the memory address and return error
  */
-#define WRITE_DATA(M, A, V) (M)->mem[(A)] = (V);
+#define WRITE_DATA(M, A, V)                                                    \
+  if ((A) >= MEM_SIZE || (A) < 0) {                                            \
+    return {                                                                   \
+        .kind = InvalidAddrMachErr,                                            \
+    };                                                                         \
+  }                                                                            \
+  (M)->mem[(A)] = (V);
 
 /**
  * Advance the machine by one clock cycle, executing an instruction in the

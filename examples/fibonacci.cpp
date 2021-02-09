@@ -20,8 +20,7 @@ int main() {
   } while (err.kind == SuccessMachErr);
 
   if (err.kind == StoppedMachErr) {
-    POP(&m, result)
-    printf("result: %d\n", result);
+    printf("result: %d\n", m.stack[0]);
   } else {
     printf("result: %s\n", "error name");
     return 1;
