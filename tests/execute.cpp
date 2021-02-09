@@ -1,34 +1,28 @@
+#include "../src/instructions.h"
 #include "../src/machine.h"
-#include "../src/opcodes.h"
 
 #include "asserts.h"
 
 int main() {
-  machine m;
+  Mach m;
 
   m = {};
-  m.reg[0] = 1;
-  m.reg[1] = 0;
-  m.mem[0] = ADD_RR;
-  m.mem[1] = 0;
-  m.mem[2] = 1;
-  execute(&m);
-  ASSERT_INT_EQ(m.reg[1], 1, "ADD_RR 1 increments acc")
+  INIT_MACH(&m)
+  m.mem[0] = 3;
+  m.mem[1] = 2;
+  m.sp = 2;
+  m.mem[MEM_SIZE - 1] = ADD;
+  m.ip = MEM_SIZE - 1;
+  advance(&m);
+  ASSERT_INT_EQ(5, m.mem[0], "add two values")
 
   m = {};
-  m.reg[0] = 1;
-  m.reg[1] = 0;
-  m.mem[0] = SUB_RR;
-  m.mem[1] = 0;
-  m.mem[2] = 1;
-  execute(&m);
-  ASSERT_INT_EQ(m.reg[1], -1, "SUB_RR 1 decrements acc")
-
-  m = {};
-  m.mem[0] = DAT;
+  INIT_MACH(&m)
+  m.mem[0] = 2;
   m.mem[1] = 3;
-  m.mem[2] = 10;
-  m.mem[3] = 0;
-  execute(&m);
-  ASSERT_INT_EQ(m.mem[3], 10, "DAT stores a value at an address")
+  m.sp = 2;
+  m.mem[MEM_SIZE - 1] = SUB;
+  m.ip = MEM_SIZE - 1;
+  advance(&m);
+  ASSERT_INT_EQ(1, m.mem[0], "subtract two values")
 }

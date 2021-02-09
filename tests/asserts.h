@@ -3,7 +3,7 @@
 
 #define ASSERT_INT_EQ(EXP, VAL, NAME)                                          \
   if (!(EXP == VAL)) {                                                         \
-    printf("%s... failed (%d != %d)", NAME, EXP, VAL);                         \
+    printf("%s... failed (%d != %d)", NAME, VAL, EXP);                         \
     exit(1);                                                                   \
   }
 

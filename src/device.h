@@ -6,9 +6,9 @@
 #define DEVICE_BUS_WIDTH 8
 
 typedef struct {
-  mem_value bus[DEVICE_BUS_WIDTH];
-} device;
+  Word bus[DEVICE_BUS_WIDTH];
+} Dev;
 
-void update(device *d);
+void update(Dev *d);
 
 #endif // TOWERVM_DEVICE_H

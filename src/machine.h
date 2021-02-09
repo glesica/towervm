@@ -8,78 +8,95 @@
 #include <cstdlib>
 
 #include "device.h"
-#include "errors.h"
 #include "memory.h"
 
-#define TARGET_MACHINE_SIZE 2048
-#define TARGET_REG_COUNT 8
-#define TARGET_DEV_COUNT 4
-#define TARGET_MEM_COUNT                                                       \
-  (TARGET_MACHINE_SIZE - (TARGET_REG_COUNT * DEVICE_BUS_WIDTH) - 1)
+// ------------------------------------
+// Machine errors
+// ------------------------------------
+
+typedef enum {
+  InvalidOpMachErr,
+  NotImplementedMachErr,
+  StoppedMachErr,
+  SuccessMachErr,
+} MachErrKind;
 
 typedef struct {
-  /**
-   * Program counter holds the address in memory of the
-   * next instruction to be executed.
-   */
-  uint32_t pc;
+  MachErrKind kind;
+} MachErr;
 
-  /**
-   * General purpose registers.
-   */
-  mem_value reg[TARGET_REG_COUNT];
+const MachErr invalid_op_mach_err = {.kind = InvalidOpMachErr};
 
-  /**
-   * Device bus memory. Reading and writing from these locations
-   * allows the machine to interact with other devices based on
-   * their particular protocols.
-   *
-   * Devices must be associated with the machine and assigned a
-   * slot. The number of slots is determined by `TARGET_DEV_COUNT`.
-   * Each slot has 8 words associated with it.
-   */
-  mem_value dev[TARGET_DEV_COUNT * DEVICE_BUS_WIDTH];
+const MachErr not_implemented_mach_err = {.kind = NotImplementedMachErr};
 
-  /**
-   * Main memory where the program and data are stored.
-   */
-  mem_value mem[TARGET_MEM_COUNT];
-} machine;
+const MachErr stopped_mach_err = {.kind = StoppedMachErr};
+
+const MachErr success_mach_err = {.kind = SuccessMachErr};
+
+// ------------------------------------
+// Machine definition
+// ------------------------------------
+
+#define MEM_SIZE 1024
+
+typedef struct {
+  Addr ip;
+  Addr sp;
+  Word mem[MEM_SIZE];
+} Mach;
+
+#define INIT_MACH(M)                                                           \
+  (M)->ip = MEM_SIZE;                                                          \
+  (M)->sp = 0;
+
+// ------------------------------------
+// Stack operations
+// ------------------------------------
+
+#define PUSH(M, V) (M)->mem[((M)->sp)++] = V;
+
+#define POP(M, V) Word V = (M)->mem[--((M)->sp)];
+
+// ------------------------------------
+// Programming
+// ------------------------------------
 
 /**
- * Expands to the number of memory locations in the device's
- * physical memory in addressable words.
+ * Read the next instruction from memory and advance the instruction pointer.
+ *
+ * TODO: Validate the pointer position first?
  */
-#define MEM_COUNT(M) (sizeof((M)->mem) / sizeof((M)->mem[0]))
+#define READ_INST(M, V) Word V = (M)->mem[((M)->ip)++];
 
 /**
- * Expands to the number of general purpose registers available on
- * the given instance of the machine.
+ * Move the instruction pointer to the given location.
  */
-#define REG_COUNT(M) (sizeof((M)->reg) / sizeof((M)->reg[0]))
+#define WRITE_INST(M, V) (M)->ip = V;
 
 /**
- * Read and store a value from memory based on the current location
- * of the program counter, then increment the counter to be ready
- * for the next read. This pattern allows us to implement jumps by
- * simply modifying the program counter itself.
+ * Read data from memory.
+ *
+ * TODO: Validate the memory address and return error
  */
-#define READ_PC(M, A)                                                          \
-  mem_value A = M->mem[M->pc];                                                 \
-  M->pc += 1;
+#define READ_DATA(M, A, V) Word V = (M)->mem[(A)];
+
+/**
+ * Write data to memory.
+ *
+ * TODO: Validate the memory address and return error
+ */
+#define WRITE_DATA(M, A, V) (M)->mem[(A)] = (V);
+
+/**
+ * Advance the machine by one clock cycle, executing an instruction in the
+ * process. Note that the instruction in question might only be a PUSH.
+ */
+MachErr advance(Mach *m);
 
 /**
  * Attach a device to the machine such that programs have access to it.
  */
-void attach_device(machine *m, device *d);
-
-/**
- * Move the program forward by executing one instruction and
- * leaving the machine in a consistent state, ready for the next. If
- * an error occurred during execution, it is reflected in the returned
- * struct.
- */
-machine_error execute(machine *m);
+void attach_device(Mach *m, Dev *d);
 
 /**
  * Reset the machine state to be ready to run a new program and then
@@ -87,6 +104,8 @@ machine_error execute(machine *m);
  * After this function returns the machine is ready to have `execute`
  * called on it.
  */
-void load_program(machine *m, const mem_value values[], uint64_t value_count);
+void load_program(Mach *m, const Word prog[], size_t prog_len);
+
+MachErr run(Mach *m);
 
 #endif // TOWERVM_MACHINE_H

@@ -1,3 +1,3 @@
 #include "device.h"
 
-void update(device *d) {}
+void update(Dev *d) {}

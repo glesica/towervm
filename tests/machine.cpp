@@ -3,12 +3,17 @@
 #include "asserts.h"
 
 int main() {
-  machine m;
+  Mach m;
 
   m = {};
-  int reg_count = REG_COUNT(&m);
-  ASSERT_INT_EQ(reg_count, TARGET_REG_COUNT,
-                "Macro should return register count");
-  int mem_size = MEM_COUNT(&m);
-  ASSERT_INT_EQ(mem_size, TARGET_MEM_COUNT, "Macro should return memory count");
+  INIT_MACH(&m)
+
+  ASSERT_INT_EQ(0, (int)m.sp, "stack pointer should be zero")
+  ASSERT_INT_EQ(MEM_SIZE, (int)m.ip, "instruction pointer should be at the end")
+
+  PUSH(&m, 5)
+  ASSERT_INT_EQ(5, (int)m.mem[0], "push should set the first value")
+
+  POP(&m, v)
+  ASSERT_INT_EQ(5, (int)v, "pop should retrieve the value")
 }
