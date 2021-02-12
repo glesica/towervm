@@ -1,0 +1,36 @@
+% A program to compute the Nth value in the
+% Fibonacci sequence.
+
+LABEL:f_prev 0  % F(n-1)
+LABEL:f_curr 1  % F(N)
+LABEL:buf    0  % Buffer
+LABEL:n      7  % N
+
+STA
+LABEL:start
+
+% Compute the next value
+
+PSH F_PREV REA  % Push F(n-1)
+PSH F_CURR REA  % Push F(n)
+ADD             % Sum for F(n+1)
+PSH buf    WRI  % Copy F(n+1) to buffer
+
+% Update previous and current values
+
+PSH f_curr REA  % Push F(n)
+PSH f_prev WRI  % Store F(n) as F(n-1)
+PSH buf    REA  % Push F(n+1) from the buffer
+PSH f_curr WRI  % Store F(n+1) as F(n)
+
+% Decrement the counter now that we have F(n+1)
+
+PSH 1           % Push counter delta
+PSH n      REA  % Push counter value
+SUB             % Update the counter value
+PSH n      WRI  % Store new counter value
+PSH n      REA  % Push new counter value
+PSH 1           % Push cut-off value
+PSH start  JNE  % Loop if counter > 1
+
+END

@@ -98,3 +98,23 @@ add_custom_target(
         check-format
         COMMAND clang-format --dry-run --Werror ${MAIN_SOURCES} ${TEST_SOURCES}
         VERBATIM)
+
+add_custom_target(
+        generate-c
+        COMMAND pipenv run python tools/generate.py src/instructions.h
+        VERBATIM)
+
+add_custom_target(
+        generate-py
+        COMMAND pipenv run python tools/generate.py tools/instructions.py
+        VERBATIM)
+
+add_custom_target(
+        format-py
+        COMMAND pipenv run black tools/
+        VERBATIM)
+
+add_custom_target(
+        check-format-py
+        COMMAND pipenv run black --check tools/
+        VERBATIM)
