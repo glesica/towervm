@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from typing import Iterable, BinaryIO
 
 from word import Word
@@ -25,8 +27,9 @@ if __name__ == "__main__":
         args = parser.parse_args(argv[1:])
 
         in_filename = args.input
-        with open(in_filename, "r") as in_file:
-            program = parse_file(in_file)
+        in_file = open(in_filename, "r")
+
+        program = parse_file(in_file)
 
         out_filename = args.output
         if not out_filename:
@@ -37,5 +40,7 @@ if __name__ == "__main__":
 
         with open(out_filename, "wb") as out_file:
             assemble_program(program, out_file)
+
+        in_file.close()
 
     main()
