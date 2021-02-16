@@ -27,7 +27,6 @@ def parse_file(file: TextIO) -> Iterable[Word]:
     """
     Parse a program written in TowerVM Assembly from a file.
 
-    TODO: Hoist labels so they can be forward-referenced
     TODO: Consider using a true parser for macros
 
     >>> from io import StringIO as S
@@ -46,8 +45,9 @@ def parse_file(file: TextIO) -> Iterable[Word]:
     labels: Dict[str, int] = {}
     mem_counter = 0
 
-    # First pass to calculate positions for LABEL macros so
-    # that we can hoist them and allow forward references.
+    # First pass to calculate positions for LABEL macros so that we can hoist
+    # them and allow forward references. This is also where we locate the START
+    # position (via macro) so that we can emit the binary header.
     for token in tokenize_file(file):
 
         # Update counter for FILL macros
@@ -62,12 +62,20 @@ def parse_file(file: TextIO) -> Iterable[Word]:
             labels[label] = mem_counter
             continue
 
+        # Process STA macro
+        if token == "START":
+            yield Word(mem_counter, token)
+            continue
+
         mem_counter += 1
 
+    # Re-use this variable since we're going to iterate again. Right now it
+    # isn't used in the second loop, but we maintain the invariant from above in
+    # case we want to use it in the future.
     mem_counter = 0
 
-    # Second pass to process other macros and create the actual
-    # Word instances that make up the program.
+    # Second pass to process other macros and create the actual Word instances
+    # that make up the program.
     for token in tokenize_file(file):
 
         # FILL macro (expands)
@@ -81,6 +89,10 @@ def parse_file(file: TextIO) -> Iterable[Word]:
 
         # Skip LABEL macros
         if token.startswith("LABEL:"):
+            continue
+
+        # Skip START macro
+        if token.startswith("START"):
             continue
 
         mem_counter += 1

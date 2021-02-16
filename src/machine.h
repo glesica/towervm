@@ -140,14 +140,6 @@ MachErr advance(Mach *m);
  */
 void attach_device(Mach *m, Dev *d);
 
-/**
- * Reset the machine state to be ready to run a new prog and then
- * read the prog, as an array of opcodes and data, into the machine.
- * After this function returns the machine is ready to have `execute`
- * called on it.
- */
-void load_program(Mach *m, const Word prog[], size_t prog_len);
-
 MachErr run(Mach *m);
 
 void print_mach(Mach *m, size_t stack_count, size_t mem_count);

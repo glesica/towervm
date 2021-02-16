@@ -1,8 +1,6 @@
 #include "machine.h"
 #include "instructions.h"
 
-MachErr execute_sta(Mach *m) { return success_mach_err; }
-
 MachErr execute_add(Mach *m) {
   POP(m, a0)
   POP(m, a1)
@@ -132,9 +130,6 @@ MachErr advance(Mach *m) {
 
   MachErr err;
   switch (inst) {
-  case STA:
-    err = execute_sta(m);
-    break;
   case END:
     err = stopped_mach_err;
     break;
@@ -179,17 +174,6 @@ MachErr advance(Mach *m) {
   }
 
   return err;
-}
-
-// TODO: Error if the prog is too large
-// TODO: Error if no STA found
-void load_program(Mach *m, const Word prog[], size_t prog_len) {
-  for (size_t i = 0; i < prog_len; i++) {
-    if (prog[i] == STA) {
-      m->ip = i;
-    }
-    m->mem[i] = prog[i];
-  }
 }
 
 MachErr run(Mach *m) {

@@ -6,8 +6,8 @@ LABEL:f_curr  1  % F(N)
 LABEL:buf     0  % Buffer
 LABEL:n       7  % N
 
-STA
 LABEL:start
+START
 
 % Compute the next value
 

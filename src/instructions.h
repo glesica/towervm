@@ -5,8 +5,7 @@
 
 #include "memory.h"
 
-const Word STA = 0;
-const Word END = 10;
+const Word END = 0;
 const Word ADD = 1000;
 const Word SUB = 1010;
 const Word EQU = 2000;

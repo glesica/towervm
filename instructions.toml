@@ -1,16 +1,10 @@
 [instructions]
 
-[instructions.STA]
-pneumonic = "start"
-category = "marker"
-description = "marker for the beginning of execution"
-value = 0
-
 [instructions.END]
 pneumonic = "end"
 category = "marker"
 description = "marker for the end of execution"
-value = 10
+value = 0
 
 [instructions.ADD]
 pneumonic = "add"
@@ -105,6 +99,6 @@ comment = "//"
 [targets.py]
 prologue = ["instructions: Dict[str, int] = {"]
 epilogue = ["}"]
-template = "    '{name}': {value},"
+template = "    \"{name}\": {value},"
 imports = ["from typing import Dict"]
 comment = "#"

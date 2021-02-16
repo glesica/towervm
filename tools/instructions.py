@@ -3,8 +3,7 @@
 from typing import Dict
 
 instructions: Dict[str, int] = {
-    "STA": 0,
-    "END": 10,
+    "END": 0,
     "ADD": 1000,
     "SUB": 1010,
     "EQU": 2000,

@@ -1,5 +1,6 @@
 #include "../src/instructions.h"
 #include "../src/machine.h"
+#include "../src/program.h"
 
 // DO NOT FORMAT THIS FILE
 
@@ -8,11 +9,11 @@
 const Word N = 7; // F(7) = 13
 
 const Word prog[] = {
+    4,           // Header: START
     0,           // F(n-1)
     1,           // F(n)
     0,           // Buffer
     N,           // N
-    STA,
     PSH, 0, REA, // Push F(n-1)
     PSH, 1, REA, // Push F(n)
     ADD,         // Sum for F(n+1)

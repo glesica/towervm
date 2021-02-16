@@ -21,7 +21,7 @@ add_executable(
         src/memory.h
         src/device.cpp
         src/device.h
-        src/instructions.h)
+        src/instructions.h src/program.h src/program.cpp)
 
 # -------------------------------------
 # Examples

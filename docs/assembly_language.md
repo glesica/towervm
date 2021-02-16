@@ -36,6 +36,15 @@ the program. The label can then be used anywhere a value can be used (for
 example, it can be pushed on to the stack before a jump) and it will be replaced
 with the correct literal when the program is assembled.
 
+### `START`
+
+Syntax: `START`
+
+This macro denotes the position in the program where execution should begin.
+During assembly, its position is recorded and included in the header metadata
+prepended to the binary. A valid program MUST include exactly one `START` macro
+usage.
+
 ## Literals
 
 Right now, only 32 bit integer literals are supported, but they may be written
@@ -45,3 +54,24 @@ in a variety of ways:
   * Octal: `0o14`
   * Decimal: `73`
   * Hex: `0xb4`
+
+## Example
+
+A simple example program is shown below. There are additional examples in the
+`examples/` directory at the root of the project.
+
+```
+% Simple example program that adds two numbers (a + b)
+LABEL:a 5
+LABEL:b 7
+
+START
+PSH $a     % Push a
+PSH $b     % Push b
+ADD        % Add the top two stack values
+END
+```
+
+Note that the syntax is extremely simple and flexible. The example above uses
+one line per instruction, but the middle three lines of the program could just
+as easily be written `PSH $a PSH $b ADD` to improve clarity, if desired.
