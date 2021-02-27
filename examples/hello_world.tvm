@@ -1,0 +1,21 @@
+% A program that simply prints "Hello, world!" to the console and exits.
+
+#import devices/console
+
+DEVICE:console:0        % Declare a dependency on the device with
+                        % GUID 0, and name it "console"
+
+LABEL:msg
+STRING:"Hello, world!"  % Message to send
+
+LABEL:msg_len
+13                      % Message length
+
+START
+
+PSH $msg_len            % Push the message length
+PSH $msg                % Push the memory address of the message
+PSH 0                   % Push the console "echo" instruction
+PSH &console DIN        % push the console device, then trigger an interrupt
+
+END
