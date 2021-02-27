@@ -1,18 +1,39 @@
-from typing import TextIO, Iterable, Dict
+from re import compile
+from typing import TextIO, Iterable
 
+from context import AssemblerContext
 from instructions import instructions
-from word import Word
+from word import Word, MetaWord
+
+DEVICE_MACRO = compile(r"^DEVICE:[a-z]+:\d+$")
+
+
+# TODO: Add line and token numbers
+class ParserError(Exception):
+    pass
 
 
 def tokenize_file(file: TextIO) -> Iterable[str]:
     """
     Tokenize the given file based on the TowerVM assembly syntax.
+
+    >>> from io import StringIO as S
+    >>> list(tokenize_file(S("\\n".join(["PSH 5", "% comment", "ADD"]))))
+    ['PSH', '5', 'ADD']
+    >>> list(tokenize_file(S("  % comment")))
+    []
     """
     file.seek(0)
 
     for line in file:
+        stripped_line = line.strip()
+
         # Full line comments
-        if line.strip().startswith("%"):
+        if stripped_line.startswith("%"):
+            continue
+
+        # Import directives (skip until implemented)
+        if stripped_line.startswith("#"):
             continue
 
         for token in line.split():
@@ -27,27 +48,35 @@ def parse_file(file: TextIO) -> Iterable[Word]:
     """
     Parse a program written in TowerVM Assembly from a file.
 
-    TODO: Consider using a true parser for macros
+    TODO: Implement #import directives
+    TODO: Add standard instructions as a library to context
+    TODO: Implement STRING macro to lay out string in memory
+    TODO: Add affordances for passing memory regions to devices
+
+    Should STRING macro pack its data? Maybe. We could do little-endian
+    style packing to make reading it back out simpler. But then we still
+    have to unpack it, making it harder to work with and harder to debug.
+    Stick with no packing for now, we can do that later if we want.
 
     >>> from io import StringIO as S
     >>> list(parse_file(S("PSH 5 PSH 6 ADD")))
-    [Word(PSH), Word(5), Word(PSH), Word(6), Word(ADD)]
+    [Word(device_count=0), Word(PSH), Word(5), Word(PSH), Word(6), Word(ADD)]
     >>> list(parse_file(S('''
     ... PSH 5
     ... PSH 6
     ... ADD''')))
-    [Word(PSH), Word(5), Word(PSH), Word(6), Word(ADD)]
+    [Word(device_count=0), Word(PSH), Word(5), Word(PSH), Word(6), Word(ADD)]
     >>> list(parse_file(S("LABEL:foo PSH 6 JNZ $foo")))
-    [Word(PSH), Word(6), Word(JNZ), Word(0)]
+    [Word(device_count=0), Word(PSH), Word(6), Word(JNZ), Word(0)]
     >>> list(parse_file(S("FILL:3:0 PSH $foo LABEL:foo")))
-    [Word(0), Word(0), Word(0), Word(PSH), Word(5)]
+    [Word(device_count=0), Word(0), Word(0), Word(0), Word(PSH), Word(5)]
     """
-    labels: Dict[str, int] = {}
+    context = AssemblerContext()
     mem_counter = 0
 
-    # First pass to calculate positions for LABEL macros so that we can hoist
-    # them and allow forward references. This is also where we locate the START
-    # position (via macro) so that we can emit the binary header.
+    # FIRST PASS
+    # Determine the size of all expanding macros and calculate the START
+    # position ahead of time. Also register symbols that will be used later.
     for token in tokenize_file(file):
 
         # Update counter for FILL macros
@@ -56,18 +85,30 @@ def parse_file(file: TextIO) -> Iterable[Word]:
             mem_counter += count
             continue
 
+        # Process DEVICE dependency macros fully
+        if DEVICE_MACRO.fullmatch(token) is not None:
+            device_name = token.split(":")[1]
+            device_id = int(token.split(":")[2])
+            context.add_device(device_name, device_id)
+            continue
+
         # Process LABEL macros fully
         if token.startswith("LABEL:"):
             label = token[6:]
-            labels[label] = mem_counter
+            context.add_label(label, mem_counter)
             continue
 
-        # Process STA macro
+        # Process START macro
         if token == "START":
-            yield Word(mem_counter, token)
+            yield MetaWord(mem_counter, token)
             continue
 
         mem_counter += 1
+
+    # Emit all device dependencies now that we can count them.
+    yield MetaWord(context.device_count, "device_count")
+    for device_name, device_id in context.devices:
+        yield Word(device_id, device_name)
 
     # Re-use this variable since we're going to iterate again. Right now it
     # isn't used in the second loop, but we maintain the invariant from above in
@@ -85,6 +126,10 @@ def parse_file(file: TextIO) -> Iterable[Word]:
             for word in [Word(value)] * count:
                 yield word
             mem_counter += count
+            continue
+
+        # Skip DEVICE dependency macros
+        if DEVICE_MACRO.fullmatch(token) is not None:
             continue
 
         # Skip LABEL macros
@@ -105,10 +150,21 @@ def parse_file(file: TextIO) -> Iterable[Word]:
         except ValueError:
             pass
 
+        # Process DEVICE usages
+        if token.startswith("&"):
+            device = token[1:]
+            value = context.translate_device(device)
+            if value is None:
+                raise ParserError()
+            yield Word(value)
+            continue
+
         # Process LABEL usages
         if token.startswith("$"):
             label = token[1:]
-            value = labels[label]
+            value = context.translate_label(label)
+            if value is None:
+                raise ParserError()
             yield Word(value)
             continue
 

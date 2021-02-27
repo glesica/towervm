@@ -33,3 +33,16 @@ class Word:
     @property
     def name(self):
         return self._name
+
+
+class MetaWord(Word):
+    """
+    A single word used as part of the metadata in the header of the assembled
+    binary.
+    """
+
+    def __init__(self, value: int, name: str):
+        super().__init__(value, name=name)
+
+    def __repr__(self) -> str:
+        return f"Word({self._name}={self._value})"
