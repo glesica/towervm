@@ -1,5 +1,5 @@
 #include "console_device.h"
-#include "instructions.h"
+#include "../../libraries/console.h"
 
 MachErr execute_ech(Mach *m) {
   POP(m, start)

@@ -233,6 +233,9 @@ void print_mach_err(MachErr e) {
   case SuccessMachErr:
     printf("SuccessMachErr");
     break;
+  case DeviceMachErr:
+    printf("DeviceMachErr");
+    break;
   }
 
   printf("\n");

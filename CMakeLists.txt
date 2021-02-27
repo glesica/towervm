@@ -22,6 +22,7 @@ add_executable(
         src/device.cpp
         src/device.h
         src/libraries/standard.h
+        src/libraries/console.h
         src/program.h
         src/devices/console/console_device.cpp
         src/devices/console/console_device.h
