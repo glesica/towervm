@@ -45,6 +45,13 @@ During assembly, its position is recorded and included in the header metadata
 prepended to the binary. A valid program MUST include exactly one `START` macro
 usage.
 
+### `STRING`
+
+Syntax: `STRING:"<S>"`
+
+Store the given string, one word per character, at the memory location implied
+by the location of the macro invocation.
+
 ## Literals
 
 Right now, only 32 bit integer literals are supported, but they may be written
