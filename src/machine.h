@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <cstdlib>
 
-#include "device.h"
 #include "memory.h"
 
 // ------------------------------------
@@ -15,6 +14,7 @@
 // ------------------------------------
 
 typedef enum {
+  DeviceMachErr,
   InvalidAddrMachErr,
   InvalidOpMachErr,
   InvalidStackAddrMachErr,
@@ -130,18 +130,32 @@ typedef struct {
   (M)->mem[(A)] = (V);
 
 /**
+ * A function that is capable of advancing a machine by one instruction.
+ *
+ * One implementation exists for the machine itself, and one for each
+ * device capable of being attached to the machine.
+ */
+typedef MachErr (*Adv)(Mach*);
+
+/**
  * Advance the machine by one clock cycle, executing an instruction in the
  * process. Note that the instruction in question might only be a PUSH.
+ *
+ * This implements the `Adv` type for the virtual machine itself.
  */
 MachErr advance(Mach *m);
 
 /**
- * Attach a device to the machine such that programs have access to it.
+ * Continue to advance the machine until it signals something other than success
+ * (which could be that its program has finished executing).
  */
-void attach_device(Mach *m, Dev *d);
-
 MachErr run(Mach *m);
 
+/**
+ * Pretty-print a machine state. Include the given number of stack and memory
+ * elements in the output (this allows the output to be a little tidier since
+ * the entire stack and memory range are seldom interesting).
+ */
 void print_mach(Mach *m, size_t stack_count, size_t mem_count);
 
 #endif // TOWERVM_MACHINE_H

@@ -1,0 +1,5 @@
+[ECH]
+pneumonic = "echo"
+category = "output"
+description = "print to the console, interpreting memory as ASCII"
+value = 0

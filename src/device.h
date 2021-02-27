@@ -1,14 +1,14 @@
 #ifndef TOWERVM_DEVICE_H
 #define TOWERVM_DEVICE_H
 
+#include "machine.h"
 #include "memory.h"
 
-#define DEVICE_BUS_WIDTH 8
+typedef uint32_t DevID;
 
 typedef struct {
-  Word bus[DEVICE_BUS_WIDTH];
+  DevID id;
+  Adv advance;
 } Dev;
-
-void update(Dev *d);
 
 #endif // TOWERVM_DEVICE_H

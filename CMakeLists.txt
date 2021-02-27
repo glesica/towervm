@@ -21,7 +21,11 @@ add_executable(
         src/memory.h
         src/device.cpp
         src/device.h
-        src/libraries/standard.h src/program.h src/program.cpp)
+        src/libraries/standard.h
+        src/program.h
+        src/devices/console/console_device.cpp
+        src/devices/console/console_device.h
+        src/program.cpp)
 
 # -------------------------------------
 # Examples
