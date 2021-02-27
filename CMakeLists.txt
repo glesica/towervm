@@ -35,6 +35,8 @@ add_executable(
 add_executable(
         fibonacci_example
         examples/fibonacci.cpp
+        src/program.cpp
+        src/program.h
         src/machine.cpp
         src/machine.h)
 
@@ -57,8 +59,8 @@ if (BUILD_TESTING)
     add_executable(
             load_program_test
             tests/load_program.cpp
-            src/machine.cpp
-            src/machine.h
+            src/program.cpp
+            src/program.h
             tests/asserts.h)
     add_test(NAME load_program_test COMMAND load_program_test)
 

@@ -1,4 +1,4 @@
-#include "../src/instructions.h"
+#include "../src/libraries/standard.h"
 #include "../src/machine.h"
 #include "../src/program.h"
 
