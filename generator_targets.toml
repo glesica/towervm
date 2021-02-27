@@ -1,0 +1,28 @@
+[targets]
+
+[targets.c]
+prologue = [
+    "#ifndef TOWERVM_INSTRUCTIONS_H",
+    "#define TOWERVM_INSTRUCTIONS_H",
+    "",
+    "#include \"../memory.h\"",
+    "",
+]
+epilogue = [
+    "",
+    "#endif // TOWERVM_INSTRUCTIONS_H",
+]
+template = "const Word {name} = {value};"
+comment = "//"
+
+[targets.py]
+prologue = [
+    "from typing import Dict",
+    "",
+    "from ..instruction import Instruction as I",
+    "",
+    "instructions: Dict[str, int] = {"
+]
+epilogue = ["}"]
+template = "    '{name}': I('{name}', {value}, '{category}', '{description}', '{pneumonic}'),"
+comment = "#"

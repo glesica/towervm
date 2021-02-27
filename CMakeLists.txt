@@ -21,7 +21,7 @@ add_executable(
         src/memory.h
         src/device.cpp
         src/device.h
-        src/instructions.h src/program.h src/program.cpp)
+        src/libraries/standard.h src/program.h src/program.cpp)
 
 # -------------------------------------
 # Examples
@@ -101,12 +101,12 @@ add_custom_target(
 
 add_custom_target(
         generate-c
-        COMMAND pipenv run python tools/generate.py src/instructions.h
+        COMMAND pipenv run python tools/generate.py libraries/standard.toml src/libraries/standard.h
         VERBATIM)
 
 add_custom_target(
         generate-py
-        COMMAND pipenv run python tools/generate.py tools/instructions.py
+        COMMAND pipenv run python tools/generate.py libraries/standard.toml tools/libraries/standard.py
         VERBATIM)
 
 add_custom_target(

@@ -8,11 +8,6 @@ def generate(instructions, target, out_file: TextIO):
         out_file.write(target["comment"])
         out_file.write(" GENERATED CODE - DO NOT MODIFY\n\n")
 
-    if "imports" in target and target["imports"]:
-        for line in target["imports"]:
-            out_file.write(f"{line}\n")
-        out_file.write("\n")
-
     if "prologue" in target and target["prologue"]:
         for line in target["prologue"]:
             out_file.write(f"{line}\n")
@@ -20,7 +15,7 @@ def generate(instructions, target, out_file: TextIO):
     template: str = target["template"]
     for name in instructions:
         inst = instructions[name]
-        out_file.write(template.format(name=name, value=inst["value"]))
+        out_file.write(template.format(name=name, **inst))
         out_file.write("\n")
 
     if "epilogue" in target and target["epilogue"]:
@@ -43,9 +38,14 @@ if __name__ == "__main__":
             description="TowerVM instruction generator",
         )
         arg_parser.add_argument(
-            "--input",
+            "--targets",
             type=str,
-            default="instructions.toml",
+            default="generator_targets.toml",
+            help="target definitions",
+        )
+        arg_parser.add_argument(
+            "input",
+            type=str,
             help="instruction definitions",
         )
         arg_parser.add_argument(
@@ -57,24 +57,26 @@ if __name__ == "__main__":
 
         in_path: str = args.input
         out_path: str = args.output
+        targets_path: str = args.targets
 
         with open(in_path, "r") as in_file:
             defs = toml.load(in_file)
 
-        instructions = defs["instructions"]
+        with open(targets_path, "r") as targets_file:
+            targets = toml.load(targets_file)
 
         target = None
         if out_path.endswith(".h"):
-            target = defs["targets"]["c"]
+            target = targets["targets"]["c"]
         if out_path.endswith(".hpp"):
-            target = defs["targets"]["c"]
+            target = targets["targets"]["c"]
         if out_path.endswith(".py"):
-            target = defs["targets"]["py"]
+            target = targets["targets"]["py"]
 
         if target is None:
             raise ValueError("no valid target found")
 
         with open(out_path, "w") as out_file:
-            generate(instructions, target, out_file)
+            generate(defs, target, out_file)
 
     main()

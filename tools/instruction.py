@@ -1,4 +1,8 @@
 class Instruction:
+    """
+    A single instruction definition, either for the standard instruction set or
+    a device-specific instruction set.
+    """
     _name: str
     _value: int
     _category: str
