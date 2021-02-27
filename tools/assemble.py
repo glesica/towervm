@@ -2,7 +2,7 @@
 
 from typing import Iterable, BinaryIO
 
-from word import Word
+from towervm.word import Word
 
 
 def assemble_program(program: Iterable[Word], out_file: BinaryIO):
@@ -16,7 +16,7 @@ if __name__ == "__main__":
         from argparse import ArgumentParser
         from sys import argv
 
-        from parse import parse_file
+        from towervm.parse import parse_file
 
         parser = ArgumentParser("assemble.py", description="TowerVM assembler")
         parser.add_argument("input", type=str, help="assembly program code")

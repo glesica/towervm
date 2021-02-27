@@ -4,7 +4,7 @@ from typing import Dict
 
 from ..instruction import Instruction as I
 
-instructions: Dict[str, int] = {
+instructions: Dict[str, I] = {
     'END': I('END', 0, 'marker', 'marker for the end of execution', 'end'),
     'ADD': I('ADD', 1000, 'arithmetic', 'add the first two values on the stack', 'add'),
     'SUB': I('SUB', 1010, 'arithmetic', 'subtract the second value on the stack from the first', 'subtract'),

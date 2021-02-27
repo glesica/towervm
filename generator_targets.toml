@@ -21,7 +21,7 @@ prologue = [
     "",
     "from ..instruction import Instruction as I",
     "",
-    "instructions: Dict[str, int] = {"
+    "instructions: Dict[str, I] = {"
 ]
 epilogue = ["}"]
 template = "    '{name}': I('{name}', {value}, '{category}', '{description}', '{pneumonic}'),"

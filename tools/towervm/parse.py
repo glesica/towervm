@@ -1,9 +1,9 @@
 from re import compile
 from typing import TextIO, Iterable
 
-from context import AssemblerContext
-from instructions import instructions
-from word import Word, MetaWord
+from .context import AssemblerContext
+from .libraries.standard import instructions
+from .word import Word, MetaWord
 
 DEVICE_MACRO = compile(r"^DEVICE:[a-z]+:\d+$")
 
@@ -170,8 +170,8 @@ def parse_file(file: TextIO) -> Iterable[Word]:
 
         # Process instructions
         try:
-            value = instructions[token]
-            yield Word(value, name=token)
+            inst = instructions[token]
+            yield Word(inst.value, name=token)
             continue
         except KeyError:
             pass

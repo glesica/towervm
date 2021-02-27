@@ -1,6 +1,6 @@
 from typing import Dict, Iterable, Optional
 
-from instruction import Instruction
+from .instruction import Instruction
 
 
 class Library:

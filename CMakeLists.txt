@@ -106,7 +106,7 @@ add_custom_target(
 
 add_custom_target(
         generate-py
-        COMMAND pipenv run python tools/generate.py libraries/standard.toml tools/libraries/standard.py
+        COMMAND pipenv run python tools/generate.py libraries/standard.toml tools/towervm/libraries/standard.py
         VERBATIM)
 
 add_custom_target(

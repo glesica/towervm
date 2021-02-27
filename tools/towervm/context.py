@@ -2,8 +2,8 @@ from typing import Dict, Optional, List, Tuple, Iterable
 
 import toml
 
-from library import Library
-from instruction import Instruction
+from .library import Library
+from .instruction import Instruction
 
 
 class AssemblerContext:
