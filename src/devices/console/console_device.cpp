@@ -10,11 +10,24 @@ Word execute_ech(const Word *data, size_t data_len) {
   return 0;
 }
 
+Word execute_ecn(const Word *data, size_t data_len) {
+  Word code = execute_ech(data, data_len);
+  if (code != 0) {
+    return code;
+  }
+  printf("\n");
+
+  return 0;
+}
+
 Word console_advance_impl(Word inst, Word *data, size_t data_len) {
   Word code;
   switch (inst) {
   case ECH:
     code = execute_ech(data, data_len);
+    break;
+  case ECN:
+    code = execute_ecn(data, data_len);
     break;
   default:
     code = 10;

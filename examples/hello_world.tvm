@@ -15,7 +15,7 @@ START
 
 PSH $msg_len            % Push the message length
 PSH $msg                % Push the memory address of the message
-PSH 0                   % Push the console "echo" instruction
+PSH 10                  % Push the console "ECN" instruction
 PSH &console DIN        % push the console device, then trigger an interrupt
 
 END

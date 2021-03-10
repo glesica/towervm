@@ -3,3 +3,9 @@ pneumonic = "echo"
 category = "output"
 description = "print to the console, interpreting memory as ASCII"
 value = 0
+
+[ECN]
+pneumonic = "echo with newline"
+category = "output"
+description = "exactly like ECH but print a newline at the end"
+value = 10

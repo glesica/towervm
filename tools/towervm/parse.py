@@ -18,7 +18,6 @@ def tokenize_file(file: TextIO) -> Iterable[str]:
     """
     Tokenize the given file based on the TowerVM assembly syntax.
 
-    TODO: Allow tokenizer to handle STRING macro when strings have spaces
     TODO: Provide line and character position along with token for errors
 
     >>> from io import StringIO as S
@@ -42,17 +41,32 @@ def tokenize_file(file: TextIO) -> Iterable[str]:
         if stripped_line.startswith("#"):
             continue
 
-        # TODO: Probably use a while loop so we can pull from the line in nested loops
-        for chunk in stripped_line.split():
+        chunks = iter(stripped_line.split())
+        while True:
+            try:
+                chunk = next(chunks)
+            except StopIteration:
+                break
             # End-of-line comments
             # TODO: This could also happen mid-string
             if chunk.startswith("%"):
                 break
 
             # Detect STRING and handle spaces
-            # TODO: Go into a separate processing routine
             if chunk.startswith('STRING:"'):
-                raise NotImplementedError("STRING macro not yet implemented")
+                # Continue to consume chunks (adding spaces back in) until we
+                # have something that matches the regex.
+                token = chunk
+
+                while STRING_MACRO.fullmatch(token) is None:
+                    try:
+                        chunk = next(chunks)
+                    except StopIteration:
+                        raise ParserError()
+
+                    token = f"{token} {chunk}"
+
+                chunk = token
 
             yield chunk
 
@@ -108,7 +122,7 @@ def parse_file(file: TextIO) -> Iterable[Word]:
         # Update counter for STRING macros
         string_match = STRING_MACRO.fullmatch(token)
         if string_match is not None:
-            value = string_match.group(0)
+            value = string_match.group(1)
             mem_counter += len(value)
             continue
 
@@ -151,7 +165,7 @@ def parse_file(file: TextIO) -> Iterable[Word]:
         # STRING macro (expands)
         string_match = STRING_MACRO.fullmatch(token)
         if string_match is not None:
-            value = string_match.group(0)
+            value = string_match.group(1)
             for char in value:
                 yield Word(ord(char), char)
             mem_counter += len(value)

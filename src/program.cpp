@@ -55,21 +55,21 @@ ProgErr open_program(const char *filename, Word prog[MEM_SIZE],
 }
 
 void print_prog_err(ProgErr e) {
-  printf("ProgErr: ");
+  fprintf(stderr, "ProgErr: ");
   switch (e.kind) {
   case DevCountProgErr:
-    printf("DevCountProgErr");
+    fprintf(stderr, "DevCountProgErr");
     break;
   case MissingDevProgErr:
-    printf("MissingDevProgErr");
+    fprintf(stderr, "MissingDevProgErr");
     break;
   case SuccessProgErr:
-    printf("SuccessProgErr");
+    fprintf(stderr, "SuccessProgErr");
     break;
   case TooLongProgErr:
-    printf("TooLongProgErr");
+    fprintf(stderr, "TooLongProgErr");
     break;
   }
 
-  printf("\n");
+  fprintf(stderr, "\n");
 }

@@ -6,5 +6,6 @@
 #include "../memory.h"
 
 const Word ECH = 0;
+const Word ECN = 10;
 
 #endif // TOWERVM_INSTRUCTIONS_H

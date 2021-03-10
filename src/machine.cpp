@@ -212,58 +212,58 @@ MachErr run(Mach *m) {
 
 void print_mach(Mach *m, size_t stack_count, size_t mem_count) {
   if (stack_count > 0) {
-    printf("stack:\n");
+    fprintf(stderr, "stack:\n");
     for (size_t i = 0; i < stack_count; i++) {
       if (i == m->sp) {
-        printf("->");
+        fprintf(stderr, "->");
       } else {
-        printf("  ");
+        fprintf(stderr, "  ");
       }
-      printf("  [%zu] = %d\n", i, m->stack[i]);
+      fprintf(stderr, "  [%zu] = %d\n", i, m->stack[i]);
     }
   }
 
   if (mem_count > 0) {
-    printf("memory:\n");
+    fprintf(stderr, "memory:\n");
     for (size_t i = 0; i < mem_count; i++) {
       if (i == m->ip) {
-        printf("->");
+        fprintf(stderr, "->");
       } else {
-        printf("  ");
+        fprintf(stderr, "  ");
       }
-      printf("  [%zu] = %d\n", i, m->mem[i]);
+      fprintf(stderr, "  [%zu] = %d\n", i, m->mem[i]);
     }
   }
 }
 
 void print_mach_err(MachErr e) {
-  printf("MachErr: ");
+  fprintf(stderr, "MachErr: ");
   switch (e.kind) {
   case InvalidAddrMachErr:
-    printf("InvalidAddrMachErr");
+    fprintf(stderr, "InvalidAddrMachErr");
     break;
   case InvalidDevMachErr:
-    printf("InvalidDevMachErr");
+    fprintf(stderr, "InvalidDevMachErr");
     break;
   case InvalidOpMachErr:
-    printf("InvalidOpMachErr");
+    fprintf(stderr, "InvalidOpMachErr");
     break;
   case InvalidStackAddrMachErr:
-    printf("InvalidStackAddrMachErr");
+    fprintf(stderr, "InvalidStackAddrMachErr");
     break;
   case NotImplementedMachErr:
-    printf("NotImplementedMachErr");
+    fprintf(stderr, "NotImplementedMachErr");
     break;
   case StoppedMachErr:
-    printf("StoppedMachErr");
+    fprintf(stderr, "StoppedMachErr");
     break;
   case SuccessMachErr:
-    printf("SuccessMachErr");
+    fprintf(stderr, "SuccessMachErr");
     break;
   case DeviceMachErr:
-    printf("DeviceMachErr");
+    fprintf(stderr, "DeviceMachErr");
     break;
   }
 
-  printf("\n");
+  fprintf(stderr, "\n");
 }
