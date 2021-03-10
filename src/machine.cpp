@@ -125,6 +125,27 @@ MachErr execute_psh(Mach *m) {
   return success_mach_err;
 }
 
+MachErr execute_din(Mach *m) {
+  // Read the device ID
+  POP(m, did)
+  // Read the instruction code
+  POP(m, inst)
+  // Read memory address
+  POP(m, addr)
+  // Read memory length
+  POP(m, len)
+
+  for (auto &dev : m->devs) {
+    if (did == dev->id) {
+      Word code = dev->impl(inst, &m->mem[addr], len);
+      PUSH(m, code)
+      return success_mach_err;
+    }
+  }
+
+  return invalid_dev_mach_err;
+}
+
 MachErr advance(Mach *m) {
   READ_INST(m, inst)
 
@@ -168,6 +189,9 @@ MachErr advance(Mach *m) {
     break;
   case PSH:
     err = execute_psh(m);
+    break;
+  case DIN:
+    err = execute_din(m);
     break;
   default:
     err = invalid_op_mach_err;
@@ -217,6 +241,9 @@ void print_mach_err(MachErr e) {
   switch (e.kind) {
   case InvalidAddrMachErr:
     printf("InvalidAddrMachErr");
+    break;
+  case InvalidDevMachErr:
+    printf("InvalidDevMachErr");
     break;
   case InvalidOpMachErr:
     printf("InvalidOpMachErr");

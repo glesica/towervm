@@ -19,7 +19,6 @@ add_executable(
         src/machine.cpp
         src/machine.h
         src/memory.h
-        src/device.cpp
         src/device.h
         src/libraries/standard.h
         src/libraries/console.h

@@ -1,35 +1,31 @@
 #include "console_device.h"
 #include "../../libraries/console.h"
 
-MachErr execute_ech(Mach *m) {
-  POP(m, start)
-  POP(m, length)
-
-  for (size_t i = 0; i < length; i++) {
-    READ_DATA(m, start + i, word)
-    printf("%d ", word);
+Word execute_ech(const Word *data, size_t data_len) {
+  for (size_t i = 0; i < data_len; i++) {
+    char c = (char)data[i];
+    printf("%c", c);
   }
 
-  PUSH(m, 0) // Garbage memory address
-  PUSH(m, 0) // Zero length data
-  PUSH(m, 0) // Success
-
-  return success_mach_err;
+  return 0;
 }
 
-MachErr console_advance_impl(Mach *m) {
-  POP(m, inst)
-
-  MachErr err;
+Word console_advance_impl(Word inst, Word *data, size_t data_len) {
+  Word code;
   switch (inst) {
   case ECH:
-    err = execute_ech(m);
+    code = execute_ech(data, data_len);
     break;
   default:
-    err = invalid_op_mach_err;
+    code = 10;
   }
 
-  return err;
+  return code;
 }
 
-Adv console_advance = console_advance_impl;
+Dev console_device_value = {
+    .id = 0,
+    .impl = console_advance_impl,
+};
+
+Dev *console_device = &console_device_value;

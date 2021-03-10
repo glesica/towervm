@@ -21,8 +21,8 @@ ProgErr load_program(Mach *m, const Word prog[], size_t prog_len) {
     Word prog_dev = prog[i];
 
     bool found = false;
-    for (Word dev : m->devs) {
-      if (prog_dev == dev) {
+    for (Dev *dev : m->devs) {
+      if (prog_dev == dev->id) {
         found = true;
         break;
       }

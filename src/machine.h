@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <cstdlib>
 
+#include "device.h"
 #include "memory.h"
 
 // ------------------------------------
@@ -16,6 +17,7 @@
 typedef enum {
   DeviceMachErr,
   InvalidAddrMachErr,
+  InvalidDevMachErr,
   InvalidOpMachErr,
   InvalidStackAddrMachErr,
   NotImplementedMachErr,
@@ -28,6 +30,8 @@ typedef struct {
 } MachErr;
 
 const MachErr invalid_op_mach_err = {.kind = InvalidOpMachErr};
+
+const MachErr invalid_dev_mach_err = {.kind = InvalidDevMachErr};
 
 const MachErr not_implemented_mach_err = {.kind = NotImplementedMachErr};
 
@@ -48,14 +52,16 @@ void print_mach_err(MachErr e);
 typedef struct {
   Addr ip;
   Addr sp;
+  Addr dev_count;
   Word mem[MEM_SIZE];
   Word stack[STACK_SIZE];
-  Word devs[32];
+  Dev *devs[32];
 } Mach;
 
 #define INIT_MACH(M)                                                           \
   (M)->ip = 0;                                                                 \
-  (M)->sp = 0;
+  (M)->sp = 0;                                                                 \
+  (M)->dev_count = 0;
 
 // ------------------------------------
 // Stack operations
@@ -130,14 +136,6 @@ typedef struct {
     };                                                                         \
   }                                                                            \
   (M)->mem[(A)] = (V);
-
-/**
- * A function that is capable of advancing a machine by one instruction.
- *
- * One implementation exists for the machine itself, and one for each
- * device capable of being attached to the machine.
- */
-typedef MachErr (*Adv)(Mach *);
 
 /**
  * Advance the machine by one clock cycle, executing an instruction in the

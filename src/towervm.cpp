@@ -1,3 +1,4 @@
+#include "devices/console/console_device.h"
 #include "machine.h"
 #include "memory.h"
 #include "program.h"
@@ -21,6 +22,7 @@ int main(int argc, char *argv[]) {
 
   Mach mach = {};
   INIT_MACH(&mach)
+  mach.devs[mach.dev_count++] = console_device;
 
   load_program(&mach, program, length);
 
