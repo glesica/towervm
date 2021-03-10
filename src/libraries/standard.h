@@ -20,5 +20,6 @@ const Word WRI = 5010;
 const Word REN = 5020;
 const Word WEN = 5030;
 const Word PSH = 6000;
+const Word DIN = 7000;
 
 #endif // TOWERVM_INSTRUCTIONS_H

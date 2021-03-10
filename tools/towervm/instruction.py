@@ -3,13 +3,16 @@ class Instruction:
     A single instruction definition, either for the standard instruction set or
     a device-specific instruction set.
     """
+
     _name: str
     _value: int
     _category: str
     _description: str
     _pneumonic: str
 
-    def __init__(self, name: str, value: int, category: str, description: str, pneumonic: str):
+    def __init__(
+        self, name: str, value: int, category: str, description: str, pneumonic: str
+    ):
         self._name = name
         self._value = value
         self._category = category

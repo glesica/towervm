@@ -6,6 +6,7 @@ from .libraries.standard import instructions
 from .word import Word, MetaWord
 
 DEVICE_MACRO = compile(r"^DEVICE:[a-z]+:\d+$")
+STRING_MACRO = compile(r"^STRING:\"(.*)\"$")
 
 
 # TODO: Add line and token numbers
@@ -17,11 +18,16 @@ def tokenize_file(file: TextIO) -> Iterable[str]:
     """
     Tokenize the given file based on the TowerVM assembly syntax.
 
+    TODO: Allow tokenizer to handle STRING macro when strings have spaces
+    TODO: Provide line and character position along with token for errors
+
     >>> from io import StringIO as S
     >>> list(tokenize_file(S("\\n".join(["PSH 5", "% comment", "ADD"]))))
     ['PSH', '5', 'ADD']
     >>> list(tokenize_file(S("  % comment")))
     []
+    >>> list(tokenize_file(S("STRING:\\"A B\\"")))
+    ['STRING:"A B"']
     """
     file.seek(0)
 
@@ -36,12 +42,19 @@ def tokenize_file(file: TextIO) -> Iterable[str]:
         if stripped_line.startswith("#"):
             continue
 
-        for token in line.split():
+        # TODO: Probably use a while loop so we can pull from the line in nested loops
+        for chunk in stripped_line.split():
             # End-of-line comments
-            if token.startswith("%"):
+            # TODO: This could also happen mid-string
+            if chunk.startswith("%"):
                 break
 
-            yield token
+            # Detect STRING and handle spaces
+            # TODO: Go into a separate processing routine
+            if chunk.startswith('STRING:"'):
+                raise NotImplementedError("STRING macro not yet implemented")
+
+            yield chunk
 
 
 def parse_file(file: TextIO) -> Iterable[Word]:
@@ -92,6 +105,13 @@ def parse_file(file: TextIO) -> Iterable[Word]:
             context.add_device(device_name, device_id)
             continue
 
+        # Update counter for STRING macros
+        string_match = STRING_MACRO.fullmatch(token)
+        if string_match is not None:
+            value = string_match.group(0)
+            mem_counter += len(value)
+            continue
+
         # Process LABEL macros fully
         if token.startswith("LABEL:"):
             label = token[6:]
@@ -126,6 +146,15 @@ def parse_file(file: TextIO) -> Iterable[Word]:
             for word in [Word(value)] * count:
                 yield word
             mem_counter += count
+            continue
+
+        # STRING macro (expands)
+        string_match = STRING_MACRO.fullmatch(token)
+        if string_match is not None:
+            value = string_match.group(0)
+            for char in value:
+                yield Word(ord(char), char)
+            mem_counter += len(value)
             continue
 
         # Skip DEVICE dependency macros
@@ -177,4 +206,4 @@ def parse_file(file: TextIO) -> Iterable[Word]:
             pass
 
         # Token is invalid so bail
-        raise ValueError(f"invalid token: {token}")
+        raise ValueError(f"invalid token: '{token}'")

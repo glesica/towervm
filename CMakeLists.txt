@@ -77,51 +77,21 @@ endif ()
 # Custom Targets
 # -------------------------------------
 
-file(GLOB MAIN_SOURCES
-        "src/**.c"
-        "src/**.cpp"
-        "src/**.h"
-        "src/**.hpp")
-file(GLOB TEST_SOURCES
-        "tests/**.c"
-        "tests/**.cpp"
-        "tests/**.h"
-        "tests/**.hpp")
-file(GLOB EXAMPLE_SOURCES
-        "examples/**.c"
-        "examples/**.cpp"
-        "examples/**.h"
-        "examples/**.hpp")
-
-# Runs clang-format on the code
+# Runs clang-format and black on the code
 add_custom_target(
         format
-        COMMAND clang-format -i ${MAIN_SOURCES} ${TEST_SOURCES}
+        COMMAND ./scripts/format.sh
         VERBATIM)
 
-# Checks whether clang-format needs to be run and sets a non-zero
-# exit code if so
+# Checks whether clang-format or black needs to be run and sets a non-zero exit
+# code if so
 add_custom_target(
         check-format
-        COMMAND clang-format --dry-run --Werror ${MAIN_SOURCES} ${TEST_SOURCES}
+        COMMAND ./scripts/check-format.sh
         VERBATIM)
 
+# Runs code generation for assembly libraries
 add_custom_target(
-        generate-c
-        COMMAND pipenv run python tools/generate.py libraries/standard.toml src/libraries/standard.h
-        VERBATIM)
-
-add_custom_target(
-        generate-py
-        COMMAND pipenv run python tools/generate.py libraries/standard.toml tools/towervm/libraries/standard.py
-        VERBATIM)
-
-add_custom_target(
-        format-py
-        COMMAND pipenv run black tools/
-        VERBATIM)
-
-add_custom_target(
-        check-format-py
-        COMMAND pipenv run black --check tools/
+        generate
+        COMMAND ./scripts/generate.sh
         VERBATIM)
