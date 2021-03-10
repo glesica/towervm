@@ -2,22 +2,74 @@
 
 #include "program.h"
 
-void load_program(Mach *m, const Word prog[], size_t prog_len) {
+ProgErr load_program(Mach *m, const Word prog[], size_t prog_len) {
   m->sp = 0;
 
   // Process the header
-  m->ip = prog[0];
+  size_t header_size = 0;
+
+  // Start address
+  m->ip = prog[header_size++];
+
+  // Devices
+  Word device_count = prog[header_size++];
+  if (device_count > DEVS_SIZE) {
+    return dev_count_prog_err;
+  }
+
+  for (size_t i = header_size; i < header_size + device_count; i++) {
+    Word prog_dev = prog[i];
+
+    bool found = false;
+    for (Word dev : m->devs) {
+      if (prog_dev == dev) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      return missing_dev_err;
+    }
+  }
+  header_size += device_count;
 
   // Read the program into memory
-  for (size_t i = 1; i < prog_len; i++) {
-    m->mem[i - 1] = prog[i];
+  for (size_t i = header_size; i < prog_len; i++) {
+    m->mem[i - header_size] = prog[i];
   }
+
+  return success_prog_err;
 }
 
-size_t open_program(const char *filename, Word prog[MEM_SIZE]) {
+// TODO: Add error checking on the file open bit
+// TODO: MEM_SIZE is no longer sufficient with the header - make it dynamic?
+ProgErr open_program(const char *filename, Word prog[MEM_SIZE],
+                     size_t *prog_len) {
   FILE *fp = fopen(filename, "rb");
   size_t word_size = sizeof(Word);
   size_t count = fread(prog, word_size, MEM_SIZE, fp);
   fclose(fp);
-  return count;
+  *prog_len = count;
+  return success_prog_err;
+}
+
+void print_prog_err(ProgErr e) {
+  printf("ProgErr: ");
+  switch (e.kind) {
+  case DevCountProgErr:
+    printf("DevCountProgErr");
+    break;
+  case MissingDevProgErr:
+    printf("MissingDevProgErr");
+    break;
+  case SuccessProgErr:
+    printf("SuccessProgErr");
+    break;
+  case TooLongProgErr:
+    printf("TooLongProgErr");
+    break;
+  }
+
+  printf("\n");
 }
