@@ -43,12 +43,14 @@ void print_mach_err(MachErr e);
 
 #define MEM_SIZE 1024
 #define STACK_SIZE 1024
+#define DEVS_SIZE 32
 
 typedef struct {
   Addr ip;
   Addr sp;
   Word mem[MEM_SIZE];
   Word stack[STACK_SIZE];
+  Word devs[32];
 } Mach;
 
 #define INIT_MACH(M)                                                           \
@@ -135,7 +137,7 @@ typedef struct {
  * One implementation exists for the machine itself, and one for each
  * device capable of being attached to the machine.
  */
-typedef MachErr (*Adv)(Mach*);
+typedef MachErr (*Adv)(Mach *);
 
 /**
  * Advance the machine by one clock cycle, executing an instruction in the
