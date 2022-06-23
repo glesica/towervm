@@ -34,6 +34,18 @@ class AssemblerContext:
     def add_label(self, name: str, value: int) -> None:
         self._labels[name] = value
 
+    # TODO: How do we handle name collisions between libraries?
+    # Not only here, but in the ASM language in general, do we do some form of
+    # namespacing? Or do we just forbid them? Also we're not going to have the
+    # library name in the code, we're just going to have the instruction name
+    # (unless we namespace), so we need a method to look that up.
+
+    def add_library(self, ident: str, instructions: Dict[str, Instruction]):
+        library = Library(ident)
+        for name, inst in instructions:
+            library.add_instruction(name, inst)
+        self._libraries.append(library)
+
     def library_for(self, inst: str) -> Optional[Library]:
         for library in self._libraries:
             if library.instruction_for(inst) is not None:
